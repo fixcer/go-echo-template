@@ -1,9 +1,21 @@
 # Golang Backend Template Service
 
+A Go (Golang) Backend Template project with Gin, Postgres.
+
+**You can use this project as a template to build your backend project in the Go language on top of this project.**
+
+## Major Packages used in this project
+
+- **gin**: Gin is an HTTP web framework written in Go (Golang). It features a Martini-like API with much better performance -- up to 40 times faster. If you need a smashing performance, get yourself some Gin.
+- **oapi-codegen**: OpenAPI/Swagger code generator for Go.
+- **sqlc**: Generate type-safe Go from SQL.
+- **wire**: Compile-time Dependency Injection for Go.
+- **viper**: For loading configuration from the `.yaml` file. Go configuration with fangs. Find, load, and unmarshal a configuration file in JSON, TOML, YAML, HCL, INI, envfile, or Java properties formats.
+- Check more packages in `go.mod`.
+
 ## Preparing your environment
 Install the following tools:
 - [Go](https://golang.org/): we use Go to build the project.
-- [Docker](https://www.docker.com/): we use Docker to using OpenAPI Generator.
 - [Protocol Buffer](https://grpc.io/docs/protoc-installation/): we use Protocol Buffer to generate the gRPC code.
 
 ## Install dependencies
@@ -18,19 +30,3 @@ To start your application in the dev profile, run:
 ```
 go run main.go
 ```
-
-## Building for production
-
-To build the final binary and optimize the senme chatbot service application for production, run:
-
-```
-go build -o senme-chatbot-service main.go
-```
-
-To load the application in the production config from Spring Cloud Config, run:
-
-```
-./senme-chatbot-service --appName senme-chatbot --profile prod --configServer http://localhost:8888
-```
-
-Default config server is http://localhost:8888, app name is senme-chatbot and profile is dev. You can change it in config/cloud.go
