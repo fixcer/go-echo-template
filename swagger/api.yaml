@@ -1,0 +1,118 @@
+openapi: 3.0.0
+info:
+    title: Go Backend Template API
+    version: 0.0.1
+servers:
+    -   url: "http://localhost:8001"
+        description: "Local development server"
+paths:
+    /actuator/health:
+        get:
+            summary: Get health status
+            tags:
+                - actuator
+            operationId: getHealth
+            responses:
+                200:
+                    description: get health status
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/health"
+    /api/v1/books:
+        get:
+            summary: Get a list of books
+            tags:
+                - book-v1
+            operationId: getBooks
+            parameters:
+                - $ref: "#/components/parameters/title"
+            responses:
+                200:
+                    description: get list of books available
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/book"
+        post:
+            summary: Add a new book
+            tags:
+                - book-v1
+            operationId: createBook
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/book"
+            responses:
+                200:
+                    description: create a new book
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/book"
+                400:
+                    description: bad request, bad data
+    /api/v1/books/{bookId}:
+        get:
+            summary: Get a book by id
+            tags:
+                - book-v1
+            operationId: getBook
+            parameters:
+                -   name: bookId
+                    in: path
+                    required: true
+                    schema:
+                        type: string
+            responses:
+                200:
+                    description: get one book based on item id
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/book"
+
+components:
+    parameters:
+        title:
+            name: title
+            in: query
+            description: the title of the book
+            schema:
+                type: string
+    schemas:
+        health:
+            type: object
+            title: Health
+            properties:
+                status:
+                    type: string
+                    description: the status of the health
+        book:
+            type: object
+            title: Book
+            required:
+                - bookId
+                - code
+            properties:
+                bookId:
+                    type: string
+                    format: uuid
+                    description: the id of the book
+                code:
+                    type: string
+                    description: the code of the book
+                title:
+                    type: string
+                    description: the id of the book
+                publisher:
+                    type: string
+                    description: name of the publisher
+                publicDate:
+                    type: string
+                    format: date
+                    description: date of publication

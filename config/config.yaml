@@ -1,0 +1,27 @@
+app:
+    runtime-root-path: runtime/
+    log:
+        save-path: logs/
+        save-name: log_
+        file-ext: log
+        time-format: 20060102
+        max-size: 10 # MB
+        max-backup: 3
+        max-age: 30 # days
+
+server:
+    run-mode: debug # debug or release
+    address: 0.0.0.0:8001
+    read-timeout: 60
+    write-timeout: 60
+
+database:
+    engine: postgres
+    user: postgres
+    password: postgres
+    host: localhost
+    port: 5432
+    name: go-backend-template
+    max-idle: 10
+    max-open: 100
+    migration-path: file://db/migration
