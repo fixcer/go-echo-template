@@ -7,12 +7,10 @@ import (
 	controller "go-backend-template/api/controller"
 	"go-backend-template/config"
 	"go-backend-template/pkg/logging"
-	"go-backend-template/repository"
-	"go-backend-template/usecase/book"
 )
 
 // SetupHandlers sets up the router
-func SetupHandlers(store repository.Store) *gin.Engine {
+func SetupHandlers(handlers *controller.HandlerImpl) *gin.Engine {
 	swagger, err := api.GetSwagger()
 	if err != nil {
 		logging.Log.Error("cannot get swagger: %v", err)
@@ -22,11 +20,7 @@ func SetupHandlers(store repository.Store) *gin.Engine {
 	gin.SetMode(config.Cfg.Server.RunMode)
 	router := gin.Default()
 	router.Use(middleware.OapiRequestValidator(swagger))
-	router = api.RegisterHandlers(router, &controller.ServerImpl{
-		BookController: &controller.BookController{
-			BookUsecase: book.NewBookUseCase(store),
-		},
-	})
+	router = api.RegisterHandlers(router, handlers)
 
 	return router
 }

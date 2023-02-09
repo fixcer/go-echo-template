@@ -1,12 +1,13 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"go-backend-template/api"
 	router "go-backend-template/api/router"
 	"go-backend-template/config"
 	"go-backend-template/db"
 	"go-backend-template/pkg/logging"
-	"go-backend-template/repository"
 )
 
 func init() {
@@ -16,13 +17,18 @@ func init() {
 }
 
 func main() {
-	runGinServer(config.Cfg.Server.Address, repository.NewStore(db.SqlDB))
+	runGinServer(config.Cfg.Server.Address, db.SqlDB)
 }
 
-func runGinServer(address string, store repository.Store) {
-	server := api.NewServer(router.SetupHandlers(store))
+func runGinServer(address string, sqlDB *sql.DB) {
+	handlers, err := Wire(sqlDB)
+	if err != nil {
+		panic(fmt.Errorf("cannot wire handlers: %v", err))
 
-	err := server.Start(address)
+	}
+	server := api.NewServer(router.SetupHandlers(handlers))
+
+	err = server.Start(address)
 	if err != nil {
 		logging.Log.Error("cannot start server: %v", err)
 	}

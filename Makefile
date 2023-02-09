@@ -10,16 +10,20 @@ dropdb:
 
 install:
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest && \
+	go install github.com/google/wire/cmd/wire@latest && \
 	go install github.com/kyleconroy/sqlc/cmd/sqlc@latest && \
 	go install github.com/golang/mock/mockgen@latest && \
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28 && \
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 && \
 	export PATH="$PATH:$(go env GOPATH)/bin"
 
-compile: api sqlc proto
+compile: api sqlc proto wire
 
 api:
 	oapi-codegen -package api -generate gin,types,spec -exclude-tags="actuator" swagger/api.yaml > api/oapi.go
+
+wire:
+	wire ./...
 
 migrateup:
 	migrate -path db/migration -database $(DB_CONNECTION) -verbose up
@@ -50,4 +54,4 @@ server:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go $(SERVICE_NAME)/db/sqlc Store
 
-.PHONY: createdb dropdb install compile api migrateup migrateup1 migratedown migratedown1 sqlc proto test server mock
+.PHONY: createdb dropdb install compile api migrateup migrateup1 migratedown migratedown1 sqlc proto test server mock wire
