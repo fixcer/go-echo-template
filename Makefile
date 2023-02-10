@@ -9,6 +9,7 @@ dropdb:
 	docker exec -it postgres dropdb --username=postgres $(DB_NAME)
 
 install:
+	go install github.com/automation-co/husky@latest && \
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest && \
 	go install github.com/google/wire/cmd/wire@latest && \
 	go install github.com/kyleconroy/sqlc/cmd/sqlc@latest && \
