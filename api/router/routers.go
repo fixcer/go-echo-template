@@ -19,6 +19,7 @@ func SetupHandlers(handlers *controller.HandlerImpl) *gin.Engine {
 
 	gin.SetMode(config.Cfg.Server.RunMode)
 	router := gin.Default()
+	router.Use(gin.Recovery())
 	router.Use(middleware.OapiRequestValidator(swagger))
 	router = api.RegisterHandlers(router, handlers)
 
