@@ -5,6 +5,12 @@ import (
 	"go-backend-template/pkg/logging"
 	"go-backend-template/repository"
 	"go-backend-template/repository/sqlc"
+	"sync"
+)
+
+var (
+	serviceOne      sync.Once
+	serviceInstance *service
 )
 
 type service struct {
@@ -13,9 +19,13 @@ type service struct {
 
 // NewBookUseCase returns a new book usecase
 func NewBookUseCase(store repository.Store) UseCase {
-	return &service{
-		store: store,
-	}
+	serviceOne.Do(func() {
+		serviceInstance = &service{
+			store: store,
+		}
+	})
+
+	return serviceInstance
 }
 
 // FindAll returns all books

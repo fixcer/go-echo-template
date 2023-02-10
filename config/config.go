@@ -11,6 +11,7 @@ type App struct {
 }
 
 type Log struct {
+	SaveFile   bool   `mapstructure:"save-file"`
 	SavePath   string `mapstructure:"save-path"`
 	SaveName   string `mapstructure:"save-name"`
 	FileExt    string `mapstructure:"file-ext"`

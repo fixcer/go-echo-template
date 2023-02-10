@@ -5,6 +5,12 @@ import (
 	"database/sql"
 	"fmt"
 	"go-backend-template/repository/sqlc"
+	"sync"
+)
+
+var (
+	storeOne      sync.Once
+	storeInstance Store
 )
 
 // Store provides all functions to execute database queries and transactions
@@ -20,10 +26,14 @@ type SQLStore struct {
 
 // NewStore creates a new store
 func NewStore(sqlDB *sql.DB) Store {
-	return &SQLStore{
-		db:      sqlDB,
-		Queries: sqlc.New(sqlDB),
-	}
+	storeOne.Do(func() {
+		storeInstance = &SQLStore{
+			db:      sqlDB,
+			Queries: sqlc.New(sqlDB),
+		}
+	})
+
+	return storeInstance
 }
 
 // ExecTx executes a function within a database transaction

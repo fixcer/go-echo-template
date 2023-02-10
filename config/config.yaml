@@ -1,6 +1,7 @@
 app:
     runtime-root-path: runtime/
     log:
+        save-file: false
         save-path: logs/
         save-name: log_
         file-ext: log

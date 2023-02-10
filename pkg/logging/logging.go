@@ -23,10 +23,15 @@ func Setup() {
 		MaxAge:     configuration.Cfg.App.Log.MaxAge, // days
 	})
 	defaultLogLevel := zapcore.DebugLevel
-	core := zapcore.NewTee(
-		zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
-		zapcore.NewCore(fileEncoder, zapcore.AddSync(os.Stdout), defaultLogLevel),
-	)
+	var core zapcore.Core
+	if configuration.Cfg.App.Log.SaveFile {
+		core = zapcore.NewTee(
+			zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
+			zapcore.NewCore(fileEncoder, zapcore.AddSync(os.Stdout), defaultLogLevel),
+		)
+	} else {
+		core = zapcore.NewTee(zapcore.NewCore(fileEncoder, zapcore.AddSync(os.Stdout), defaultLogLevel))
+	}
 
 	Log = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel)).Sugar()
 }
