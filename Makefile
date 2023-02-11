@@ -53,6 +53,6 @@ server:
 	go run main.go
 
 mock:
-	mockgen -package mockdb -destination db/mock/store.go $(SERVICE_NAME)/db/sqlc Store
+	mockgen -package mockdb -destination repository/mock/store.go $(SERVICE_NAME)/repository Store
 
 .PHONY: createdb dropdb install compile api migrateup migrateup1 migratedown migratedown1 sqlc proto test server mock wire

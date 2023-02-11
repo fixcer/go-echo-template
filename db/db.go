@@ -11,8 +11,9 @@ import (
 	"time"
 )
 
-var SqlDB *sql.DB
+var sqlDB *sql.DB
 
+// Setup creates a new database connection and runs migrations
 func Setup() {
 	connStr := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=disable",
 		config.Cfg.Database.Engine,
@@ -21,19 +22,24 @@ func Setup() {
 		config.Cfg.Database.Host,
 		config.Cfg.Database.Port,
 		config.Cfg.Database.Name)
-	conn, err := sql.Open(config.Cfg.Database.Engine, connStr)
-	conn.SetMaxIdleConns(config.Cfg.Database.MaxIdle)
-	conn.SetMaxOpenConns(config.Cfg.Database.MaxOpen)
-	conn.SetConnMaxLifetime(time.Hour)
+
+	var err error
+	sqlDB, err = sql.Open(config.Cfg.Database.Engine, connStr)
+	sqlDB.SetMaxIdleConns(config.Cfg.Database.MaxIdle)
+	sqlDB.SetMaxOpenConns(config.Cfg.Database.MaxOpen)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	if err != nil {
 		logging.Log.Fatal("Failed to connect to the Database")
 	}
 
-	SqlDB = conn
-
 	logging.Log.Info("🚀 Connected Successfully to the Database")
 	runMigrations(connStr)
+}
+
+// Instance returns the database connection
+func Instance() *sql.DB {
+	return sqlDB
 }
 
 func runMigrations(connStr string) {

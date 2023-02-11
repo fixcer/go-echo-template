@@ -17,7 +17,7 @@ func init() {
 }
 
 func main() {
-	runGinServer(config.Cfg.Server.Address, db.SqlDB)
+	runGinServer(config.Cfg.Server.Address, db.Instance())
 }
 
 func runGinServer(address string, sqlDB *sql.DB) {
