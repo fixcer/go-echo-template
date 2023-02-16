@@ -21,7 +21,7 @@ install:
 compile: api sqlc proto wire
 
 api:
-	oapi-codegen -package api -generate gin,types,spec -exclude-tags="actuator" swagger/api.yaml > api/oapi.go
+	oapi-codegen -package api -generate server,types,spec -exclude-tags="actuator" swagger/api.yaml > api/oapi.go
 
 wire:
 	wire ./...

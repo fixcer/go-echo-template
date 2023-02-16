@@ -16,7 +16,7 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
 // Book defines model for book.
@@ -53,114 +53,95 @@ type CreateBookJSONRequestBody = Book
 type ServerInterface interface {
 	// Get a list of books
 	// (GET /api/v1/books)
-	GetBooks(c *gin.Context, params GetBooksParams)
+	GetBooks(ctx echo.Context, params GetBooksParams) error
 	// Add a new book
 	// (POST /api/v1/books)
-	CreateBook(c *gin.Context)
+	CreateBook(ctx echo.Context) error
 	// Get a book by id
 	// (GET /api/v1/books/{bookId})
-	GetBook(c *gin.Context, bookId string)
+	GetBook(ctx echo.Context, bookId string) error
 }
 
-// ServerInterfaceWrapper converts contexts to parameters.
+// ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
-	Handler            ServerInterface
-	HandlerMiddlewares []MiddlewareFunc
-	ErrorHandler       func(*gin.Context, error, int)
+	Handler ServerInterface
 }
 
-type MiddlewareFunc func(c *gin.Context)
-
-// GetBooks operation middleware
-func (siw *ServerInterfaceWrapper) GetBooks(c *gin.Context) {
-
+// GetBooks converts echo context to params.
+func (w *ServerInterfaceWrapper) GetBooks(ctx echo.Context) error {
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetBooksParams
-
 	// ------------- Optional query parameter "title" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "title", c.Request.URL.Query(), &params.Title)
+	err = runtime.BindQueryParameter("form", true, false, "title", ctx.QueryParams(), &params.Title)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter title: %s", err), http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter title: %s", err))
 	}
 
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-	}
-
-	siw.Handler.GetBooks(c, params)
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetBooks(ctx, params)
+	return err
 }
 
-// CreateBook operation middleware
-func (siw *ServerInterfaceWrapper) CreateBook(c *gin.Context) {
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-	}
-
-	siw.Handler.CreateBook(c)
-}
-
-// GetBook operation middleware
-func (siw *ServerInterfaceWrapper) GetBook(c *gin.Context) {
-
+// CreateBook converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateBook(ctx echo.Context) error {
 	var err error
 
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.CreateBook(ctx)
+	return err
+}
+
+// GetBook converts echo context to params.
+func (w *ServerInterfaceWrapper) GetBook(ctx echo.Context) error {
+	var err error
 	// ------------- Path parameter "bookId" -------------
 	var bookId string
 
-	err = runtime.BindStyledParameter("simple", false, "bookId", c.Param("bookId"), &bookId)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "bookId", runtime.ParamLocationPath, ctx.Param("bookId"), &bookId)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter bookId: %s", err), http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter bookId: %s", err))
 	}
 
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-	}
-
-	siw.Handler.GetBook(c, bookId)
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetBook(ctx, bookId)
+	return err
 }
 
-// GinServerOptions provides options for the Gin server.
-type GinServerOptions struct {
-	BaseURL      string
-	Middlewares  []MiddlewareFunc
-	ErrorHandler func(*gin.Context, error, int)
+// This is a simple interface which specifies echo.Route addition functions which
+// are present on both echo.Echo and echo.Group, since we want to allow using
+// either of them for path registration
+type EchoRouter interface {
+	CONNECT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	HEAD(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	OPTIONS(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	PATCH(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	TRACE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 }
 
-// RegisterHandlers creates http.Handler with routing matching OpenAPI spec.
-func RegisterHandlers(router *gin.Engine, si ServerInterface) *gin.Engine {
-	return RegisterHandlersWithOptions(router, si, GinServerOptions{})
+// RegisterHandlers adds each server route to the EchoRouter.
+func RegisterHandlers(router EchoRouter, si ServerInterface) {
+	RegisterHandlersWithBaseURL(router, si, "")
 }
 
-// RegisterHandlersWithOptions creates http.Handler with additional options
-func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options GinServerOptions) *gin.Engine {
-
-	errorHandler := options.ErrorHandler
-
-	if errorHandler == nil {
-		errorHandler = func(c *gin.Context, err error, statusCode int) {
-			c.JSON(statusCode, gin.H{"msg": err.Error()})
-		}
-	}
+// Registers handlers, and prepends BaseURL to the paths, so that the paths
+// can be served under a prefix.
+func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL string) {
 
 	wrapper := ServerInterfaceWrapper{
-		Handler:            si,
-		HandlerMiddlewares: options.Middlewares,
-		ErrorHandler:       errorHandler,
+		Handler: si,
 	}
 
-	router.GET(options.BaseURL+"/api/v1/books", wrapper.GetBooks)
+	router.GET(baseURL+"/api/v1/books", wrapper.GetBooks)
+	router.POST(baseURL+"/api/v1/books", wrapper.CreateBook)
+	router.GET(baseURL+"/api/v1/books/:bookId", wrapper.GetBook)
 
-	router.POST(options.BaseURL+"/api/v1/books", wrapper.CreateBook)
-
-	router.GET(options.BaseURL+"/api/v1/books/:bookId", wrapper.GetBook)
-
-	return router
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object

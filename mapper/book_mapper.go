@@ -7,10 +7,12 @@ import (
 )
 
 // ToBookResponses converts sqlc.Book to api.Book
-func ToBookResponses(books []sqlc.Book) *[]api.Book {
-	bookResponses := make([]api.Book, 0, len(books))
-	for _, book := range books {
-		bookResponses = append(bookResponses, api.Book{
+func ToBookResponses(books []sqlc.Book) []api.Book {
+	bookResponses := make([]api.Book, len(books))
+
+	for idx := range books {
+		book := books[idx]
+		bookResponses[idx] = api.Book{
 			BookId:    book.BookID,
 			Code:      book.Code,
 			Title:     &book.Title,
@@ -18,8 +20,8 @@ func ToBookResponses(books []sqlc.Book) *[]api.Book {
 			PublicDate: &types.Date{
 				Time: book.PublicDate,
 			},
-		})
+		}
 	}
 
-	return &bookResponses
+	return bookResponses
 }

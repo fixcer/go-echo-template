@@ -1,16 +1,16 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
 // Server serves HTTP requests for our banking usecase.
 type Server struct {
-	router *gin.Engine
+	router *echo.Echo
 }
 
 // NewServer creates a new HTTP server and set up routing.
-func NewServer(router *gin.Engine) *Server {
+func NewServer(router *echo.Echo) *Server {
 	return &Server{
 		router: router,
 	}
@@ -18,5 +18,5 @@ func NewServer(router *gin.Engine) *Server {
 
 // Start runs the HTTP server on a specific address.
 func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+	return server.router.Start(address)
 }

@@ -1,23 +1,28 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"go-backend-template/api"
 	"go-backend-template/mapper"
 	"net/http"
 )
 
-func (c HandlerImpl) GetBooks(ctx *gin.Context, params api.GetBooksParams) {
+func (c HandlerImpl) GetBooks(ctx echo.Context, params api.GetBooksParams) error {
 	books := c.bookUseCase.FindAll()
-	ctx.JSON(http.StatusOK, mapper.ToBookResponses(books))
+	err := ctx.JSON(http.StatusOK, mapper.ToBookResponses(books))
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
 }
 
-func (c HandlerImpl) CreateBook(ctx *gin.Context) {
+func (c HandlerImpl) CreateBook(ctx echo.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (c HandlerImpl) GetBook(ctx *gin.Context, bookId string) {
+func (c HandlerImpl) GetBook(ctx echo.Context, bookId string) error {
 	//TODO implement me
 	panic("implement me")
 }

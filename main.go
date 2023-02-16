@@ -17,10 +17,10 @@ func init() {
 }
 
 func main() {
-	runGinServer(config.Cfg.Server.Address, db.Instance())
+	runHttpServer(config.Cfg.Server.Address, db.Instance())
 }
 
-func runGinServer(address string, sqlDB *sql.DB) {
+func runHttpServer(address string, sqlDB *sql.DB) {
 	handlers, err := Wire(sqlDB)
 	if err != nil {
 		panic(fmt.Errorf("cannot wire handlers: %v", err))

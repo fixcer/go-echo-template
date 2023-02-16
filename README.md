@@ -1,12 +1,12 @@
 # Golang Backend Template Service
 
-A Go (Golang) Backend Template project with Gin, Postgres.
+A Go (Golang) Backend Template project with Echo, Postgres.
 
 **You can use this project as a template to build your backend project in the Go language on top of this project.**
 
 ## Major Packages used in this project
 
-- **gin**: Gin is an HTTP web framework written in Go (Golang). It features a Martini-like API with much better performance -- up to 40 times faster. If you need a smashing performance, get yourself some Gin.
+- **echo**: Echo is a fast and unfancy HTTP server framework for Go.
 - **oapi-codegen**: OpenAPI/Swagger code generator for Go.
 - **sqlc**: Generate type-safe Go from SQL.
 - **wire**: Compile-time Dependency Injection for Go.
